@@ -32,7 +32,6 @@ class Command(BaseCommand):
                     juiz: Processo.objects.filter(juiz_responsavel=juiz, nivel='COMPLEXO').count() 
                     for juiz in juizes
                 }
-                # Pega o juiz com o menor número na contagem
                 juiz_sorteado = min(contagem_complexos, key=contagem_complexos.get)
                 
                 self.stdout.write(self.style.ERROR(f'{processo.numero} (COMPLEXO) -> Sorteado para: {juiz_sorteado.username}'))
@@ -42,7 +41,6 @@ class Command(BaseCommand):
                 juiz_sorteado = random.choice(juizes)
                 self.stdout.write(self.style.SUCCESS(f' {processo.numero} ({processo.nivel}) -> Sorteado para: {juiz_sorteado.username}'))
 
-            # Salva o resultado no banco
             processo.juiz_responsavel = juiz_sorteado
             processo.status = 'DISTRIBUIDO'
             processo.save()

@@ -1,37 +1,31 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Processo(models.Model):
-    NIVEL_CHOICES = [
-        ('BASICO', 'Básico (Geralmente CPF)'),
-        ('INTERMEDIÁRIO', 'Intermediário (Geralmente CPF)'),
-        ('COMPLEXO', 'Complexo (Geralmente CNPJ)'),
-    ]
-
-    STATUS_CHOICES = [
-        ('CADASTRADO', 'Cadastrado (Aguardando Sorteio)'),
-        ('DISTRIBUIDO', 'Distribuido (Sorteado)'),
-        ('CONFIRMADO', 'Aguardando Forasteiro (Conflito de Interesse)'),
-    ]
-
-    numero = models.CharField(max_length=50, unique=True, verbose_name="Número do Processo")
-    documento = models.CharField(max_length=20, verbose_name="CPF/CNPJ")
-    nivel = models.CharField(max_length=15, choices=NIVEL_CHOICES, verbose_name="Nível de Complexidade")
-    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='CADASTRADO', verbose_name="Status")
-    reaberto = models.BooleanField(default=False, verbose_name="É um caso reaberto?")
-    data_cadastro = models.DateTimeField(auto_now_add=True)
-
-    juiz_responsavel = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name="Juiz Responsável"
+class Magistrado(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        verbose_name="Usuário Sistema")
+    
+    #RF 06
+    parentes = models.ManyToManyField(
+        'self', blank=True, symmetrical=True,
+        verbose_name="Parente")
+    
+    #RF 02 - 04
+    saldo_processos = models.IntegerField(
+        default=0, verbose_name="Conta de Distribuição")
+    
+    #RF 11
+    genero = models.CharField(
+        max_length=20, choices=[('M', 'Masculino'), ('F', 'Feminino')],
+        null=True, blank=True
     )
-
     class Meta:
-        verbose_name = "Processo"
-        verbose_name_plural = "Processos"
+        verbose_name = "Magistrado"
+        verbose_name_plural = "Magistrados"
 
     def __str__(self):
-        return f"{self.numero} - {self.get_nivel_display()}"
+        return f"Mag. {self.user.get_full_name() or self.user.username} (Saldo: {self.saldo_processos})"
     
 class ConflitoInteresse(models.Model):
     processo = models.ForeignKey(
