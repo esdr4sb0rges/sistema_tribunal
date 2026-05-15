@@ -26,22 +26,64 @@ class Magistrado(models.Model):
 
     def __str__(self):
         return f"Mag. {self.user.get_full_name() or self.user.username} (Saldo: {self.saldo_processos})"
-    
-class ConflitoInteresse(models.Model):
-    processo = models.ForeignKey(
-    Processo, on_delete=models.CASCADE,
-        verbose_name="Processo com Conflito"
-    )
-    juiz = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        verbose_name="Juiz declarou Conflito"
-    )
-    justificativa = models.TextField(verbose_name="Justificativa de Conflito")
-    data_registro = models.DateTimeField(auto_now_add=True)
+class ClasseProcessual(models.Model):
+    ORGAO_CHOICES = [
+        ('PLENO', 'Tribunal Pleno (26)'),
+        ('TURMAS', 'Turmas (14)'),
+        ('PRESIDENCIA', 'Presidência (2)'),
+    ]
+    nome = models.CharField(max_length=150, verbose_name="Nome da Classe")
+    sigla = models.CharField(max_length=20, verbose_name="Sigla")
+    orgao_competente = models.CharField(max_length=20, choices=ORGAO_CHOICES, verbose_name="Órgão Competente")
+
+    # Atende a exigência: "O sistema precisa suportar versionamento"
+    ativo = models.BooleanField(default=True, verbose_name="Classe Ativa/Vigente?")
+    data_criacao = models.DateField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Conflito de Interesse"
-        verbose_name_plural = "Conflitos de Interesse"
+        verbose_name = "Classe Processual"
+        verbose_name_plural = "Classe Processuais"
+        
+    def __str__(self):
+        return f"{self.sigla} - {self.nome} ({self.get_orgao_competente_display()})"
+
+class Processo(models.Model):
+    STATUS_CHOICES = [
+        ('CADASTRADO', 'Cadastrado (Aguardando Distribuição)'),
+        ('DISTRIBUIDO', 'Distribuído'),
+        ('SUSPENSO', 'Suspenso / Excluído da Distribuição'),
+    ]
+    numero = models.CharField(max_length=50, unique=True, verbose_name="Número do Processo")
+    classe_processual = models.ForeignKey(ClasseProcessual, on_delete=models.RESTRICT, verbose_name="Classe Processual")
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='CADASTRADO')
+    data_autuacao = models.DateTimeField(auto_now_add=True)
+    relator = models.ForeignKey(Magistrado, on_delete=models.SET_NULL, null=True, blank=True, related_name='processos_relatados')
+    processo_prevento = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Vinculado por Prevenção:")
+
+    class Meta:
+        verbose_name = "Processo Judicial"
+        verbose_name_plural = "Processos Judiciais"
+    
+    def __str__(self):
+        return f"Proc. {self.numero} - {self.classe_processual.sigla}"
+    
+class EstadoExclusao(models.Model):
+    MOTIVO_CHOICES = [
+        ('AFASTAMENTO', 'Afastamento > 30 dias'),
+        ('APOSENTADORIA', '40 dias antes da aposentadoria'),
+        ('FERIAS', 'Ferias'),
+        ('LICENCA', 'Licença Médica'),
+    ]    
+
+    magistrado = models.ForeignKey(Magistrado, on_delete=models.CASCADE)
+    motivo = models.CharField(max_length=30, choices=MOTIVO_CHOICES)
+    data_inicio = models.DateField(verbose_name="Início da Exclusão")
+    data_fim = models.DateField(null=True, blank=True, verbose_name="Fim da Exclusão (Se houver)")
+
+    class Meta: 
+        verbose_name = "Estado de exclusão"
+        verbose_name_plural = "Estados de exclusão"
 
     def __str__(self):
-        return f"Conflito: Processo {self.processo.numero} - Juiz ID: {self.juiz.id}"
+        return f"{self.magistrado} excluido por {self.get_motivo_display()}"
+        
