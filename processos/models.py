@@ -42,7 +42,7 @@ class ClasseProcessual(models.Model):
 
     class Meta:
         verbose_name = "Classe Processual"
-        verbose_name_plural = "Classe Processuais"
+        verbose_name_plural = "Classes Processuais"
         
     def __str__(self):
         return f"{self.sigla} - {self.nome} ({self.get_orgao_competente_display()})"
@@ -86,4 +86,20 @@ class EstadoExclusao(models.Model):
 
     def __str__(self):
         return f"{self.magistrado} excluido por {self.get_motivo_display()}"
+    
+class AtaDistribuicao(models.Model):
+    data_hora = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da Distribuição")
+    processo_numero = models.CharField(max_length=50, verbose_name="Número do Processo")
+    classe_sigla = models.CharField(max_length=20, verbose_name="Classe")
+    magistrado_sorteado = models.CharField(max_length=150, verbose_name="Magistrado Relator")
+    tipo_distribuicao = models.CharField(max_length=50, verbose_name="Tipo de Distribuição")
+    fundamento_legal = models.TextField(verbose_name="Fundamento Regimental/Legal")
+
+    class Meta:
+        verbose_name = "Ata de Distribuição"
+        verbose_name_plural = "Atas de Distribuição"
+
+    def __str__(self):
+        return f"Ata {self.id} - Proc: {self.processo_numero} ({self.data_hora.strftime('%d/%m/%Y %H:%M')})"
+     
         

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Magistrado, ClasseProcessual, Processo, EstadoExclusao
+from .models import Magistrado, ClasseProcessual, Processo, EstadoExclusao, AtaDistribuicao
 
 
 @admin.register(Magistrado)
@@ -24,3 +24,12 @@ class ProcessoAdmin(admin.ModelAdmin):
 class EstadoExclusaoAdmin(admin.ModelAdmin):
     list_display = ('magistrado', 'motivo', 'data_inicio', 'data_fim')
     list_filter = ('motivo',)
+
+@admin.register(AtaDistribuicao)
+class AtaDistribuicaoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'data_hora', 'processo_numero', 'classe_sigla', 'magistrado_sorteado', 'tipo_distribuicao')
+    list_filter = ('tipo_distribuicao', 'data_hora')
+    search_fields = ('processo_numero', 'magistrado_sorteado')
+    
+    def has_add_permission(self, request): return False
+    def has_change_permission(self, request, obj=None): return False
