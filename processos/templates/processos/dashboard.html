@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Painel de Distribuição - TRT 22</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 font-sans antialiased">
+    <nav class="bg-blue-900 text-white p-4 shadow-md">
+      <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold tracking-wide">
+          ⚖️ Sistema Tribunal - Distribuição Regimental
+        </h1>
+        <a
+          href="/admin/"
+          class="text-sm bg-blue-700 hover:bg-blue-600 px-3 py-2 rounded transition"
+          >Painel Admin</a
+        >
+      </div>
+    </nav>
+
+    <div class="container mx-auto p-6 space-y-6">
+      {% if messages %} {% for message in messages %}
+      <div
+        class="p-4 rounded shadow bg-green-100 text-green-800 border-l-4 border-green-500"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          class="bg-white p-6 rounded-lg shadow border-b-4 border-yellow-500"
+        >
+          <h3 class="text-gray-500 text-sm font-semibold uppercase">
+            Processos na Fila
+          </h3>
+          <p class="text-3xl font-bold text-gray-800 mt-2">
+            {{ processos_pendentes.count }}
+          </p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow border-b-4 border-blue-500">
+          <h3 class="text-gray-500 text-sm font-semibold uppercase">
+            Magistrados Cadastrados
+          </h3>
+          <p class="text-3xl font-bold text-gray-800 mt-2">
+            {{ total_juizes }}
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="bg-white p-6 rounded-lg shadow flex flex-col sm:flex-row justify-between items-center gap-4"
+      >
+        <div>
+          <h2 class="text-lg font-bold text-gray-800">Processamento em Lote</h2>
+          <p class="text-gray-600 text-sm">
+            Dispare o algoritmo regimental para limpar a fila de processos
+            aguardando distribuição.
+          </p>
+        </div>
+        <form method="POST">
+          {% csrf_token %}
+          <button
+            type="submit"
+            name="rodar_sorteio"
+            class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg shadow-md transition transform active:scale-95"
+          >
+            🚀 Rodar Distribuição Regimental
+          </button>
+        </form>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow lg:col-span-1">
+          <h2 class="text-md font-bold text-gray-800 mb-4">
+            ⏳ Fila de Aguardo
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+              <thead>
+                <tr class="border-b text-gray-400 font-semibold">
+                  <th class="pb-2">Número</th>
+                  <th class="pb-2">Classe</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for proc in processos_pendentes %}
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="py-2 font-medium text-gray-900">
+                    {{ proc.numero }}
+                  </td>
+                  <td class="py-2">{{ proc.classe_processual.sigla }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="2" class="py-4 text-center text-gray-400">
+                    Nenhum processo na fila.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow lg:col-span-2">
+          <h2 class="text-md font-bold text-gray-800 mb-4">
+            📜 Histórico Recente de Atas (Auditoria)
+          </h2>
+          <div class="space-y-3">
+            {% for ata in ultimas_atas %}
+            <div class="p-4 bg-gray-50 border rounded-lg text-sm">
+              <div class="flex justify-between font-bold text-gray-700">
+                <div class="flex items-center gap-1">
+                  <span class="text-gray-500">Proc:</span>
+                  <span class="text-blue-900">{{ ata.processo_numero }}</span>
+                  <span class="mx-1 text-gray-400">➔</span>
+                  <span class="text-emerald-800 font-semibold"
+                    >{{ ata.magistrado_sorteado }}</span
+                  >
+                </div>
+
+                <span class="text-xs text-gray-400 font-normal">
+                  {{ ata.data_hora|date:"d/m H:i" }}
+                </span>
+              </div>
+              <p class="text-xs text-blue-600 font-medium mt-1">
+                {{ ata.tipo_distribuicao }}
+              </p>
+              <p class="text-gray-500 text-xs mt-1 italic">
+                {{ ata.fundamento_legal }}
+              </p>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-center py-4 text-sm">
+              Nenhuma ata registrada no sistema ainda.
+            </p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

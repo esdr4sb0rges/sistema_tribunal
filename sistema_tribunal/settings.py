@@ -55,7 +55,7 @@ ROOT_URLCONF = 'sistema_tribunal.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'processos' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

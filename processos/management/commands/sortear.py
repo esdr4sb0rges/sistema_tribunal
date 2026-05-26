@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
             else:
                 juiz_sorteado = juizes_elegiveis.order_by('saldo_processos').first()
-                self.stdout.write(self.style.SUCCESS(f'⚖️ Sorteio -> Selecionado por menor carga: {juiz_sorteado.user.username}'))
+                self.stdout.write(self.style.SUCCESS(f'Sorteio -> Selecionado por menor carga: {juiz_sorteado.user.username}'))
 
             processo.relator = juiz_sorteado
             processo.status = 'DISTRIBUIDO'
@@ -55,8 +55,8 @@ class Command(BaseCommand):
                 magistrado_sorteado=juiz_sorteado.user.get_full_name() or juiz_sorteado.user.username,
                 tipo_distribuicao=tipo_dist,
                 fundamento_legal=fundamento
-        )
-        self.stdout.write(self.style.SUCCESS(f'📜 Ata de auditoria gerada para o Processo {processo.numero}'))
+            )
+            self.stdout.write(self.style.SUCCESS(f'📜 Ata de auditoria gerada para o Processo {processo.numero}'))
 
         self.stdout.write(self.style.WARNING('========================================='))
         self.stdout.write(self.style.SUCCESS('Sorteio finalizado. Painel atualizado.'))
